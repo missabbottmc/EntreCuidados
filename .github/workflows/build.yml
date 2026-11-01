@@ -28,12 +28,11 @@ jobs:
         uses: android-actions/setup-android@v4
 
       - name: Aceitar licencas do Android SDK
-        run: |
-          yes | sdkmanager --licenses
+        run: yes | sdkmanager --licenses
 
       - name: Instalar pacotes do Android
         run: |
-          sdkmanager --install "platforms;android-36-ext1" "build-tools;36.0.0"
+          sdkmanager --install "platforms;android-36" "build-tools;36.0.0"
 
       - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -45,6 +44,26 @@ jobs:
           mkdir -p projeto
           unzip -q entrecuidados-pacote-limpo.zip -d projeto
           test -f projeto/settings.gradle.kts
+          test -f projeto/app/build.gradle.kts
+
+      - name: Ajustar versao do Android SDK
+        working-directory: projeto
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("app/build.gradle.kts")
+          s = p.read_text()
+
+          old = "compileSdk { version = release(36) { minorApiLevel = 1 } }"
+          new = "compileSdk { version = release(36) }"
+
+          if old not in s:
+              raise SystemExit("Configuracao original do compileSdk nao encontrada.")
+
+          p.write_text(s.replace(old, new))
+          print("Configuracao do Android SDK ajustada.")
+          PY
 
       - name: Criar chave de depuracao
         working-directory: projeto
