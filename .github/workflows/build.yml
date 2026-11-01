@@ -26,10 +26,14 @@ jobs:
 
       - name: Preparar Android SDK
         uses: android-actions/setup-android@v4
-        with:
-          packages: |
-            platforms;android-36-ext1
-            build-tools;36.0.0
+
+      - name: Aceitar licencas do Android SDK
+        run: |
+          yes | sdkmanager --licenses
+
+      - name: Instalar pacotes do Android
+        run: |
+          sdkmanager --install "platforms;android-36-ext1" "build-tools;36.0.0"
 
       - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
